@@ -41,7 +41,7 @@ It’s verbose, it’s tedious, and it forces you to keep track of a temporary v
 
 ### Enter DIP 1053: "Anti-Boilerplate Heaven"
 
-DIP 1053 changes the game by allowing the compiler to understand the structure of the data you’re receiving and "unpack" it into distinct variables in a single statement. The syntax is clean, intuitive, and - most importantly - straightforward.
+DIP 1053 changes the game by allowing the compiler to understand the structure of the data you’re receiving and "unpack" it into distinct variables in a single statement. The syntax is clean, intuitive, and, most importantly, straightforward.
 
 #### 1. Basic Unpacking Declarations
 
@@ -58,7 +58,7 @@ void main() {
 
 ```
 
-The compiler handles the type inference for you. `status` becomes an `int`, and `message` becomes a `string`. If you want to be explicit, you can even specify the types yourself: `(int s, string m) = getResult();`.
+The compiler handles the type inference for you. `status` becomes an `int` and `message` becomes a `string`. If you want to be explicit, you can even specify the types yourself: `(int s, string m) = getResult();`.
 
 _Note: the unpacking declaration must specify at least one type or storage class, and the number of declarations has to match the number of elements in the tuple._
 
@@ -71,7 +71,7 @@ auto (a, (b, c)) = tuple(1, tuple("2", 3.0));
 (int a, (string b, double c)) = tuple(1, tuple("2", 3.0));
 ```
 
-This looks very similar to the built-in pattern matching syntax found in languages like Swift or Rust. It allows you to scope your variables exactly where they are needed while keeping the logic flat and readable.
+This looks very similar to the built-in pattern matching syntax found in languages like Swift and Rust. It allows you to scope your variables exactly where they are needed while keeping the logic flat and readable.
 
 #### 3. Foreach Integration
 
@@ -115,7 +115,7 @@ foreach(i, (j, k); enumerate(arr)) {
 }
 ```
 
-When iterating over Associative Arrays, the index variable can _also_ be unpacked:
+When iterating over associative arrays, the index variable can _also_ be unpacked:
 ```d
 auto aa = [t(1, 2): "hi", t(3, 4): "bye"];
 foreach ((a, b), s; aa)
