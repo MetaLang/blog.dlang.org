@@ -7,7 +7,7 @@ categories:
   - DIPs
 ---
 
-# DIP 1053: A Tale of Tu-Ples
+# DIP 1053: A Tale of Tuples
 
 If you’ve used D for any significant length of time, you know that the tuple situation is pretty convoluted. There are built-in tup- err... [_compile time sequences_](https://dlang.org/articles/ctarguments.html), a library-level wrapper around these sequences called [`std.meta.AliasSeq`](https://dlang.org/library/std/meta/alias_seq.html), and _a second_, and subtly different, library level wrapper in [`std.typecons.Tuple`](https://dlang.org/library/std/typecons.html). Though together these constructs get the job done, the ergonomics can be pretty clunky, to say the least. You’re often stuck accessing elements by index (`t[0]`, `t[1]`, etc.), or giving them names that you have to remember later. It works, but it isn’t exactly "Fast code, fast" when you’re fighting the syntax just to get at your data.
 
