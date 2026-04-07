@@ -1,5 +1,5 @@
 ---
-title: DIP-1053 - A Tale of Tu-Ples
+title: DIP 1053 - A Tale of Tuples
 author: Jared Hanson
 
 categories:
@@ -7,15 +7,15 @@ categories:
   - DIPs
 ---
 
-# DIP-1053: A Tale of Tu-Ples
+# DIP 1053: A Tale of Tu-Ples
 
-If you’ve used D for any significant length of time, you know that the tuple situation is pretty convoluted. There are built-in tup- err... [_compile time sequences_](https://dlang.org/articles/ctarguments.html), a library-level wrapper around these sequences called [`std.meta.AliasSeq`](https://dlang.org/library/std/meta/alias_seq.html), and _a second_ - and subtly different - library level wrapper in [`std.typecons.Tuple`](https://dlang.org/library/std/typecons.html). While together, these constructs get the job done, the ergonomics can be pretty clunky, to say the least. You’re often stuck accessing elements by index (`t[0]`, `t[1]`, etc.), or giving them names that you have to remember later. It works, but it isn’t exactly "Fast code, fast" when you’re fighting the syntax just to get at your data.
+If you’ve used D for any significant length of time, you know that the tuple situation is pretty convoluted. There are built-in tup- err... [_compile time sequences_](https://dlang.org/articles/ctarguments.html), a library-level wrapper around these sequences called [`std.meta.AliasSeq`](https://dlang.org/library/std/meta/alias_seq.html), and _a second_, and subtly different, library level wrapper in [`std.typecons.Tuple`](https://dlang.org/library/std/typecons.html). Though together these constructs get the job done, the ergonomics can be pretty clunky, to say the least. You’re often stuck accessing elements by index (`t[0]`, `t[1]`, etc.), or giving them names that you have to remember later. It works, but it isn’t exactly "Fast code, fast" when you’re fighting the syntax just to get at your data.
 
-I’ve long argued that D is an [anti-boilerplate language](https://dlang.org/blog/2018/03/29/std-variant-is-everything-cool-about-d/). The language generally prefers the most direct and concise way to get things done; that’s why I’m so excited about [DIP-1053](https://github.com/dlang/DIPs/blob/master/DIPs/accepted/DIP1053.md), which was recently accepted. It finally brings first-class tuple Unpacking syntax (or structured bindings, for those coming from C++) directly into the language core.
+I’ve long argued that D is [an anti-boilerplate language](https://dlang.org/blog/2018/03/29/std-variant-is-everything-cool-about-d/). The language generally prefers the most direct and concise way to get things done; that’s why I’m so excited [about DIP 1053](https://github.com/dlang/DIPs/blob/master/DIPs/accepted/DIP1053.md), which was recently accepted. It finally brings first-class tuple Unpacking syntax (or structured bindings, for those coming from C++) directly into the language core.
 
 ### The Status Quo: "Boilerplate Hell"
 
-Before DIP-1053, returning multiple values from a function was a multi-step ceremony. Even with `std.typecons.Tuple`, you were trapped between two equally annoying options:
+Before DIP 1053, returning multiple values from a function was a multi-step ceremony. Even with `std.typecons.Tuple`, you were trapped between two equally annoying options:
 
 1. **Manual Indexing**: Accessing `result[0]` and `result[1]`. This is a one-way ticket to bugs if you ever change the return order.
 2. **Explicit Assignment**: Manually declaring variables and assigning them one by one.
@@ -39,9 +39,9 @@ void main() {
 
 It’s verbose, it’s tedious, and it forces you to keep track of a temporary variable (`res`) that you don't even want.
 
-### Enter DIP-1053: "Anti-Boilerplate Heaven"
+### Enter DIP 1053: "Anti-Boilerplate Heaven"
 
-DIP-1053 changes the game by allowing the compiler to understand the structure of the data you’re receiving and "unpack" it into distinct variables in a single statement. The syntax is clean, intuitive, and - most importantly - straightforward.
+DIP 1053 changes the game by allowing the compiler to understand the structure of the data you’re receiving and "unpack" it into distinct variables in a single statement. The syntax is clean, intuitive, and - most importantly - straightforward.
 
 #### 1. Basic Unpacking Declarations
 
@@ -75,7 +75,7 @@ This looks very similar to the built-in pattern matching syntax found in languag
 
 #### 3. Foreach Integration
 
-DIP-1053 isn't just for function returns; it also adds support for `foreach` loops over arrays of tuples:
+DIP 1053 isn't just for function returns; it also adds support for `foreach` loops over arrays of tuples:
 
 ```d
 auto arr = [tuple(1, "2"), tuple(3, "4"), tuple(5, "6")];
@@ -124,11 +124,11 @@ foreach ((a, b), s; aa)
 
 Finally, `static foreach` and structs/classes with `opApply` are also supported; check out the DIP for further details.
 
-This removes the need to use `pair[0]` or the old-school `foreach(id, label; pairs)` syntax which occasionally had edge cases with complex types. It’s consistent, predictable, and - dare I say - pleasant to use.
+This removes the need to use `pair[0]` or the old-school `foreach(id, label; pairs)` syntax which occasionally had edge cases with complex types. It’s consistent, predictable, and, dare I say, pleasant to use.
 
 #### 4. Unpacking Function Literal Parameters
 
-This is where the functionality _really_ gets powerful. DIP-1053 supports unpacking for the parameters of function and delegate literals:
+This is where the functionality _really_ gets powerful. DIP 1053 supports unpacking for the parameters of function and delegate literals:
 
 ```d
 alias dg = ((x, y), z) => writeln(x, " ", y, " ", z);
@@ -147,16 +147,16 @@ arr.each!( ((ref x, y)){ x = 3 * y; });
 assert(arr.all!( (const (x, y)) => x == 3 * y));
 ```
 
-For technical reasons, regular functions don't support this kind of unpacking - yet. We hope to expand the scope of the built-in tuple syntax with future DIPs.
+For technical reasons, regular functions don't support this kind of unpacking... yet. We hope to expand the scope of the built-in tuple syntax with future DIPs.
 
 ### Sugar Never Tasted So Good
 
-You might dismiss the functionality introduced by DIP-1053 as mere "syntactic sugar." But in a language like D that gracefully supports everything from bare-metal programming to high level application programming to one-off scripts, sugar is what makes high-level abstractions viable.
+You might dismiss the functionality introduced by DIP 1053 as mere "syntactic sugar." But in a language like D that gracefully supports everything from bare-metal programming to high level application programming to one-off scripts, sugar is what makes high-level abstractions viable.
 
-By lowering the friction of using tuples, we encourage better API design. D prefers the most concise, direct method, and DIP-1053 is as direct as concise and direct as it gets. It highlights why D is such a great language to use; you get faster, safer code that combines the speed of native compilation with the productivity of scripting languages.
+By lowering the friction of using tuples, we encourage better API design. D prefers the most concise, direct method, and DIP 1053 is as concise and direct as it gets. It highlights why D is such a great language to use; you get faster, safer code that combines the speed of native compilation with the productivity of scripting languages.
 
 ### Final Thoughts
 
-With DIP-1053, we’ve obviated much of the machinery that previously made tuples a chore. We've simplified our users' lives and moved one step closer being a truly "anti-boilerplate" language.
+With DIP 1053, we’ve obviated much of the machinery that previously made tuples a chore. We've simplified our users' lives and moved one step closer being a truly "anti-boilerplate" language.
 
-If you want to see the nitty-gritty details, I highly recommend reading the [accepted DIP](https://github.com/dlang/DIPs/blob/master/DIPs/accepted/DIP1053.md). D is a community-driven project, and we’re always looking for people to jump in and get their hands dirty.
+If you want to see the nitty-gritty details, I highly recommend [reading the accepted DIP](https://github.com/dlang/DIPs/blob/master/DIPs/accepted/DIP1053.md). D is a community-driven project, and we’re always looking for people to jump in and get their hands dirty.
