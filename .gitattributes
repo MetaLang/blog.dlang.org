@@ -1,0 +1,9 @@
+# Ensures the Github Actions runner doesn't confused by Windows line endings
+* text=auto eol=lf
+
+# Treat image files as binary to ensure Git doesn't attempt to "fix" 
+# their internal line endings. It should never happen, but better
+# safe than sorry
+*.png binary
+*.jpg binary
+*.gif binary
