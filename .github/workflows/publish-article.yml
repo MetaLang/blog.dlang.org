@@ -3,10 +3,10 @@ on:
   workflow_dispatch:
     inputs:
       file_name:
-        description: 'The filename of the draft in _posts/prepub/ (e.g., my-awesome-d-article.md)'
+        description: 'The filename OR folder name  of the draft in _posts/prepub/ (e.g., my-awesome-d-article.md or my-awesome-d-article)'
         required: true
       pub_date:
-        description: 'Optional: Custom date (YYYY-MM-DD). Leave blank for today.'
+        description: "Optional: Custom date (YYYY-MM-DD). Leave blank for today's date."
         required: false
 
 jobs:
@@ -20,12 +20,24 @@ jobs:
 
       - name: Validate Draft
         run: |
-          FULL_PATH="prepub/${{ github.event.inputs.file_name }}"
+          FULL_PATH="_posts/prepub/${{ github.event.inputs.file_name }}"
           
           # 1. Existence check
-          if [[ ! -f "$FULL_PATH" ]]; then
-            echo "Error: File '$FULL_PATH' not found in the prepub folder."
+          if [[ ! -e "$FULL_PATH" ]]; then
+            echo "Error: Target '$FULL_PATH' not found in the prepub folder."
             exit 1
+          fi
+          
+          # Locate the markdown file whether it's standalone or inside a folder
+          if [[ -d "$FULL_PATH" ]]; then
+            MD_FILE=$(find "$FULL_PATH" -maxdepth 1 -name "*.md" | head -n 1)
+            if [[ -z "$MD_FILE" ]]; then
+              echo "Error: No markdown file found inside directory '$FULL_PATH'."
+              exit 1
+            fi
+            CHECK_FILE="$MD_FILE"
+          else
+            CHECK_FILE="$FULL_PATH"
           fi
           
           # 2. Date format check (if provided)
@@ -36,32 +48,62 @@ jobs:
           fi
           
           # 3. Front Matter gatekeeping
-          if ! head -n 1 "$FULL_PATH" | grep -q "^---$"; then
-            echo "Error: Missing starting Front Matter delimiter (---) in $FULL_PATH"
+          # Strip Windows BOM and CR line ending, just in case
+          if [[ ! $(head -n 1 "$CHECK_FILE" | tr -d '\r' | sed '1s/^\xEF\xBB\xBF//') == "---" ]]; then
+            echo "Error: Missing starting Front Matter delimiter (---) in $CHECK_FILE"
             exit 1
           fi
 
-      - name: Prepare Destination Path
-        id: prep
+      - name: Process and Route Content
+        id: process
         run: |
-          # Use custom date or default to current server date
+          INPUT_NAME="${{ github.event.inputs.file_name }}"
+          FULL_PATH="_posts/prepub/$INPUT_NAME"
           INPUT_DATE="${{ github.event.inputs.pub_date }}"
           DATE=${INPUT_DATE:-$(date +'%Y-%m-%d')}
           
           # Strip any existing YYYY-MM-DD prefix from the filename to prevent double-dating
-          CLEAN_FILENAME=$(echo "${{ github.event.inputs.file_name }}" | sed -E 's/^[0-9]{4}-[0-9]{2}-[0-9]{2}-//')
+          CLEAN_SLUG=$(echo "$INPUT_NAME" | sed -E 's/^[0-9]{4}-[0-9]{2}-[0-9]{2}-//' | sed 's/\.md$//')
+          CLEAN_FILENAME="${DATE}-${CLEAN_SLUG}.md"
           
-          NEW_FILENAME="${DATE}-${CLEAN_FILENAME}"
-          echo "new_path=_posts/live/${NEW_FILENAME}" >> $GITHUB_OUTPUT
-
-      - name: Move File to Live
-        run: |
           mkdir -p _posts/live
-          # Use mv to relocate from prepub to the calculated live path
-          mv "prepub/${{ github.event.inputs.file_name }}" "${{ steps.prep.outputs.new_path }}"
+          
+          if [[ -d "$FULL_PATH" ]]; then
+            # --- FOLDER ROUTING LOGIC ---
+            MD_FILE=$(find "$FULL_PATH" -maxdepth 1 -name "*.md" | head -n 1)
+            
+            # Create the dedicated assets directory for this post
+            mkdir -p "assets/images/$CLEAN_SLUG"
+            
+            # Move all non-markdown files (images, gifs, etc.) to the assets folder
+            find "$FULL_PATH" -maxdepth 1 -type f ! -name "*.md" -exec mv {} "assets/images/$CLEAN_SLUG/" \;
+            
+            # Move the markdown file to the live posts directory
+            mv "$MD_FILE" "_posts/live/$CLEAN_FILENAME"
+            
+            # Remove the now-empty prepub directory
+            rm -rf "$FULL_PATH"
+            
+            # Flag for the python script step
+            echo "IS_BUNDLE=true" >> $GITHUB_ENV
+          else
+            # --- SINGLE FILE ROUTING LOGIC ---
+            mv "$FULL_PATH" "_posts/live/$CLEAN_FILENAME"
+            echo "IS_BUNDLE=false" >> $GITHUB_ENV
+          fi
+          
+          # Export variables for downstream steps
+          echo "POST_SLUG=$CLEAN_SLUG" >> $GITHUB_ENV
+          echo "POST_FILENAME=$CLEAN_FILENAME" >> $GITHUB_ENV
+          echo "new_path=_posts/live/${CLEAN_FILENAME}" >> $GITHUB_OUTPUT
+
+      - name: Rewrite Markdown Image Links
+        if: env.IS_BUNDLE == 'true'
+        run: python .github/scripts/rewrite_image_links.py
 
       - name: Commit and Sync
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Published: ${{ steps.prep.outputs.new_path }}"
-          file_pattern: "_posts/live/* prepub/*"
+          commit_message: "Published: ${{ steps.process.outputs.new_path }}"
+          # Added assets/images/* so the bot commits the newly moved pictures
+          file_pattern: "_posts/live/* _posts/prepub/* assets/images/*"
