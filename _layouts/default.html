@@ -23,18 +23,7 @@
 <body>
 
   <div class="blog-container">
-    <header class="dlf-header">
-      <h1>The D Blog</h1>
-      <p style="color: #666; font-size: 1.1em; margin: 5px 0 0 0; border: none !important; padding: 0 !important;">The official blog for the D Programming Language.</p>
-      <nav class="nav-bar">
-        <ul>
-          <li><a href="{{ '/' | relative_url }}">D HOME</a></li>
-          <li><a href="https://forum.dlang.org/">D FORUMS</a></li>
-          <li><a href="https://dlang.org/donate.html">DONATE</a></li>
-          <li><a href="https://store.dlang.org/">SHOP</a></li>
-        </ul>
-      </nav>
-    </header>
+    {% include header.html %}
 
     <div class="main-grid">
       <main class="article-col" style="{% if page.hide_sidebar %}flex: 1; width: 100%; max-width: 100%;{% endif %}">
