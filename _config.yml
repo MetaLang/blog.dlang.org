@@ -1,8 +1,8 @@
 title: D Language Blog Archive
 description: The official blog for the D Programming Language.
 
-url: "https://blog.dlang.org"
-baseurl: ""
+url: "https://metalang.github.io"
+baseurl: "/blog.dlang.org"
 
 # Set a custom URL depending on what folder the file is in
 defaults:
