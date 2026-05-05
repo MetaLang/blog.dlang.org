@@ -16,8 +16,6 @@ categories:
   - Metaprogramming
 ---
 
-# The Amazing Compile-Time Metaprogramming State Machine
-
 Complex object construction is a classic challenge in software engineering. When an aggregate (a `struct` or `class`) has many fields, constructors become cumbersome (telescoping constructors), and direct initialization leaves the door open to uninitialized data.
 
 The traditional answer is the **Builder Pattern**. In languages like Java or C#, builders are typically run-time beasts. They validate at run time that you’ve set mandatory fields, which means an application might crash because of a simple developer oversight.
