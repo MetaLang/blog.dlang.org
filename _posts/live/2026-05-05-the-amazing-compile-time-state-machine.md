@@ -160,7 +160,8 @@ template BuilderFor(T)
     {
         T agg;
 
-        // Note: The signature changed. We are now returning a new BuildImpl with 
+        // Note: The signature changed. We are now returning
+        // a new BuildImpl with 1 less item in the list
         BuilderImpl!(Erase!(name, fields)) opDispatch(string name, F)(F val)
         {
             writeln(i"Setting field '$(name)' to $(val)");
