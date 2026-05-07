@@ -375,7 +375,6 @@ What if we try to double-initialize a field?
 ```d
 void main()
 {
-    // This now compiles! We didn't set 'secure', but it's @optional.
     auto conf = BuilderFor!NetworkConfig()
                     .host("localhost")
                     .host("127.0.0.1") // Error: Field 'host' cannot be initialized twice
@@ -389,7 +388,6 @@ What if we provide a value of the wrong type?
 ```d
 void main()
 {
-    // This now compiles! We didn't set 'secure', but it's @optional.
     auto conf = BuilderFor!NetworkConfig()
                     .host(127.001) // Error: Field 'host' in type NetworkConfig has type string, not double
                     .port(80)
@@ -402,7 +400,6 @@ What if we try to initialize fields out of order when `enforceFieldOrder` = `tru
 ```d
 void main()
 {
-    // This now compiles! We didn't set 'secure', but it's @optional.
     auto conf = BuilderFor!(NetworkConfig, true)()
                     .port(80) // Error: In-order field initialization was specified. Expected 'host', not 'port'
                     .host("localhost")
