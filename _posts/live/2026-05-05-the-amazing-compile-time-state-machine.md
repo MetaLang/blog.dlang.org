@@ -414,7 +414,7 @@ void main()
 {
     auto u = BuilderFor!UserProfile()
                 .id(42)
-                .name("Meta")
+                .username("Meta")
                 .build();
     writeln(u.id); // Prints 42
 }
