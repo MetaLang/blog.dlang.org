@@ -258,20 +258,20 @@ BuilderImpl!(Erase!(name, fields)) opDispatch(string name, F)(F val)
             // type of the field defined in the aggregate?
             alias FieldType = typeof(__traits(getMember, agg, name));
      
-            static assert(is(F: FieldType), "Field '$(name)' in type $(T.stringof) has type $(FieldType.stringof), not $(F.stringof)".text());
+            static assert(is(F: FieldType), i"Field '$(name)' in type $(T.stringof) has type $(FieldType.stringof), not $(F.stringof)".text());
             
             // Enforce field order and return a new builder ...
         }
         else
         {
             // The field exists in T, but not in our 'fields' tuple
-            static assert(false, "Field '$(name)' cannot be initialized twice".text());
+            static assert(false, i"Field '$(name)' cannot be initialized twice".text());
         }
     }
     else
     {
         // The field doesn't exist on the struct at all
-        static assert(false, "No such field '$(name)' for type $(T.stringof)".text());
+        static assert(false, i"No such field '$(name)' for type $(T.stringof)".text());
     }
 }
 
@@ -294,8 +294,8 @@ T build()()
     // We use .map and .joiner from std.algorithm and .to from std.conv to
     // create a clean string of the missing field names at compile time.
     static assert(fields.length == 0, 
-        "Can't build $(T.stringof) before all fields have been specified.".text(),
-        "Uninitialized fields: $([fields].joiner(", ").to!string())".text());
+        i"Can't build $(T.stringof) before all fields have been specified.".text(),
+        i"Uninitialized fields: $([fields].joiner(", ").to!string())".text());
 
     return agg;
 }
@@ -333,7 +333,7 @@ struct BuilderImpl(fields...)
         // Apply a compile-time filter to our 'fields' list using Filter from std.meta
         alias requiredFields = Filter!(isRequiredField, fields);
 
-        static assert(requiredFields.length == 0, "Missing required fields for $(T.stringof): $([requiredFields].joiner(", ").to!string())".text());
+        static assert(requiredFields.length == 0, i"Missing required fields for $(T.stringof): $([requiredFields].joiner(", ").to!string())".text());
         
         return agg;
     }
