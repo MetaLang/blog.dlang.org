@@ -26,7 +26,7 @@ In this blog, I'll go over some features of D and how I use them to make games. 
 - Achieving C-like speed with a much cleaner developer experience.
 
 *Game Made with Parin: [Worms Within](https://kapendev.itch.io/worms-within)*
-![Worms Within Screenshot](game1.png)
+![Worms Within Screenshot](/assets/images/i-stopped-fighting-my-tools-and-built-a-game-engine-in-d/game1.png)
 
 ## Memory Management
 
@@ -280,7 +280,7 @@ One other use case for mixing GC and non-GC code is the tracking system mentione
 I think I covered almost everything I do with memory in D. Might have missed one thing, but the point still stands. Having this level of control without fighting the language is awesome!
 
 *Game Made with Parin: [A Short Metamorphosis](https://kapendev.itch.io/a-short-metamorphosis)*
-![A Short Metamorphosis Screenshot](game2.png)
+![A Short Metamorphosis Screenshot](/assets/images/i-stopped-fighting-my-tools-and-built-a-game-engine-in-d/game2.png)
 
 ## Metaprogramming
 
@@ -455,7 +455,7 @@ In the `free` method above, I use [the `tupleof` property](https://dlang.org/spe
 These are simple things, but combined they make my code simpler.
 
 *Game Made with Parin: [Twenty Seconds, Twenty Steps](https://kapendev.itch.io/twenty-seconds-twenty-steps)*
-![Runani Screenshot](game3.png)
+![Runani Screenshot](/assets/images/i-stopped-fighting-my-tools-and-built-a-game-engine-in-d/game3.png)
 
 ## Compile Times
 
@@ -523,4 +523,4 @@ And this is the end. I'm Alexandros F. G. Kapretsos, a game developer and Econom
 - Read my personal [rants about game development on dev.to/kapendev](https://dev.to/kapendev).
 
 *Game Made with Parin: [Runani](https://kapendev.itch.io/runani)*
-![Runani Screenshot](game4.png)
+![Runani Screenshot](/assets/images/i-stopped-fighting-my-tools-and-built-a-game-engine-in-d/game4.png)
