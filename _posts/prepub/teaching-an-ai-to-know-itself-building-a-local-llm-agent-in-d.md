@@ -21,7 +21,7 @@ Here's a walkthrough of the two parts I'm most happy with: the `@Tool` UDA regis
 
 Before anything else, the foundation. D's `importC` lets you include C headers and use the API directly, as native D code. DLLM has one file, `includes.c`, that pulls in the llama.cpp and mtmd headers. From there, `llama_decode`, `llama_model_load_from_file`, `llama_sampler_sample`, the whole llama.cpp API, is available in D with full type safety and zero FFI overhead.
 
-This is the same trick I used in DaNode to wrap OpenSSL, and an integral part of DImGui to call into Vulkan, SDL, the Open Asset Import Library, and shaderC. `importC` is one of my favorite D features. I used to rely heavily on the Derelict & BindBC wrappers, and they were fantastic community contributions, but `importC` has made them almost obsolete. No wrapper libraries, no binding maintenance, no surprises when the upstream C API updates."
+This is the same trick I used in DaNode to wrap OpenSSL, and an integral part of DImGui to call into Vulkan, SDL, the Open Asset Import Library, and shaderC. `importC` is one of my favorite D features. I used to rely heavily on the Derelict & BindBC wrappers, and they were fantastic community contributions, but `importC` has made them almost obsolete. No wrapper libraries, no binding maintenance, no surprises when the upstream C API updates.
 
 #### The Tool System: Start With a Single UDA
 
@@ -94,11 +94,11 @@ auto executor = (JSONValue args) {
 ALL_TOOLS ~= ToolDef(name, description, parameters, executor);
 ```
 
-So after startup, `ALL_TOOLS`, the global tool definition array contains everything needed to both describe each tool to the LLM agent and allow it to call it by name at runtime. The function signature is the *single* source of truth.
+So after startup, `ALL_TOOLS`, the global tool definition array contains everything needed to both describe each tool to the LLM agent and allow it to be called by name at runtime. The function signature is the *single* source of truth.
 
 #### What Gets Generated: System Prompt and Grammar
 
-From `ALL_TOOLS`, two things are auto-magically generated. First, `toolsToJSON()` generates the JSON that goes into the system prompt, so the model knows what tools exist, and what they can do:
+From `ALL_TOOLS`, two things are auto-magically generated. First, `toolsToJSON()` generates the JSON that goes into the system prompt, so the model knows what tools exist and what they can do:
 
 ```json
 [{
@@ -114,13 +114,14 @@ From `ALL_TOOLS`, two things are auto-magically generated. First, `toolsToJSON()
 }]
 ```
 
-Second, `buildJsonGrammar()` generates a [GBNF grammar](https://github.com/ggml-org/llama.cpp/blob/master/grammars/README.md) for constrained sampling. A GBNF grammar is a set of rules that define exactly what sequence of tokens (text) is valid. A simple example for a yes/no answer would look like:
+Second, `buildJsonGrammar()` generates [a GBNF grammar](https://github.com/ggml-org/llama.cpp/blob/master/grammars/README.md) for constrained sampling. A GBNF grammar is a set of rules that define exactly what sequence of tokens (text) is valid. A simple example for a yes/no answer would look like:
+
 ```d
 root ::= "yes" | "no"
 ```
-That's it, the sampler can now only produce the word "yes" or "no", nothing else. For DLLM's tool calls, the grammar is more complex but the principle is identical. The toolname rule is generated dynamically from ALL_TOOLS, so only real tool names are valid. Everything else follows standard JSON structure rules.
+That's it, the sampler can now only produce the word "yes" or "no", nothing else. For DLLM's tool calls, the grammar is more complex but the principle is identical. The `toolname` rule is generated dynamically from `ALL_TOOLS`, so only real tool names are valid. Everything else follows standard JSON structure rules.
 
-Unlike many Python based agent frameworks which handle tool calls with prompt engineering and output parsing. Grammar-constrained sampling on the other hand gives an iron clad guarantee. The grammar is fed to llama.cpp's sampler, and it restricts the token vocabulary at every step to only tokens that keep the output valid. The full GBNF grammar definition of valid JSON toolcalls is:
+Unlike many Python-based agent frameworks, which handle tool calls with prompt engineering, output parsing, and prayer, grammar-constrained sampling gives an iron-clad guarantee that every tool call is structurally valid. The full GBNF grammar definition of valid JSON toolcalls is:
 
 ```d
 string buildJsonGrammar() {
@@ -163,13 +164,13 @@ auto sampler = (agent.json && inToolCall) ? agent.json : agent.sampler;
 auto token = llama_sampler_sample(sampler, agent.ctx, -1);
 ```
 
-The moment a `<tool_call>` tag appears in the buffer, the grammar sampler takes over. The model *cannot* produce a malformed tool call while it's active. After `</tool_call>` closes, the grammar sampler is reset and the conversational sampler takes back over.
+The moment a `<tool_call>` tag appears in the buffer, the grammar sampler takes over. The model *cannot* produce a malformed tool call while it's active. After `</tool_call>` closes, the grammar sampler is reset and the conversational sampler takes over again.
 
 No parsing heuristics, no fallback regex. Malformed tool calls are structurally impossible.
 
 #### The Self-Knowledge Trick
 
-The current version can read and reason about its own source code using just the Qwen 8B model. This isn't magic, it's Retrieval-Augmented Generation ([RAG](https://en.wikipedia.org/wiki/Retrieval-augmented_generation)). You can ask DLLM to index its own source code living in the *./src/* folder using the embedding model. Source code is chunked, chunks are tokenized, and embedded using a dedicated CPU-resident Nomic embed model, and stored with cosine similarity scoring:
+The current version can read and reason about its own source code using just the Qwen 8B model. This isn't magic, it's [Retrieval-Augmented Generation (RAG)](https://en.wikipedia.org/wiki/Retrieval-augmented_generation). You can ask DLLM to index its own source code living in the *./src/* folder using the embedding model. Source code is chunked, chunks are tokenized, embedded using a dedicated CPU-resident Nomic embed model, and stored with cosine similarity scoring:
 
 ```d
 float cosineSimilarity(float[] a, float[] b) {
@@ -198,8 +199,8 @@ DLLM is more than just the tool system and grammar sampler. Here's everything th
 
 #### In closing
 
-D gave me `importC` for zero-overhead access to llama.cpp, UDAs and `__traits` for a tool system with one source of truth, and UFCS for code that reads the way I think. The entire tool registration and grammar generation system is about 150 lines.
+D gave me `ImportC` for zero-overhead access to llama.cpp, UDAs and `__traits` for a tool system with one source of truth, and UFCS for code that reads the way I think. The entire tool registration and grammar generation system is about 150 lines.
 
 If you've been looking for a project to try D on, local AI tooling is a good fit. The space is young, the performance characteristics reward D's zero-overhead philosophy, and the metaprogramming needs of LLM agents map almost perfectly onto what D does best.
 
-DLLM is open source under GPLv3. The code is small enough to read in an afternoon, find it at [github.com/DannyArends/DLLM](https://github.com/DannyArends/DLLM).
+DLLM is open source under GPLv3. The code is small enough to read in an afternoon. Find it at [github.com/DannyArends/DLLM](https://github.com/DannyArends/DLLM).
