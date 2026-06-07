@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       file_name:
-        description: 'The filename OR folder name  of the draft in _posts/prepub/ (e.g., my-awesome-d-article.md or my-awesome-d-article)'
+        description: 'The filename OR folder name of the draft in _posts/prepub/ (e.g., my-awesome-d-article.md or my-awesome-d-article/)'
         required: true
       pub_date:
         description: "Optional: Custom date (YYYY-MM-DD). Leave blank for today's date."
@@ -96,6 +96,9 @@ jobs:
           echo "POST_SLUG=$CLEAN_SLUG" >> $GITHUB_ENV
           echo "POST_FILENAME=$CLEAN_FILENAME" >> $GITHUB_ENV
           echo "new_path=_posts/live/${CLEAN_FILENAME}" >> $GITHUB_OUTPUT
+
+      - name: Wrap Code Blocks in Raw Liquid Tags
+        run: python .github/scripts/wrap_code_blocks_in_raw_tags.py
 
       - name: Rewrite Markdown Image Links
         if: env.IS_BUNDLE == 'true'
